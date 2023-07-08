@@ -20,4 +20,4 @@ router.route('/reset-password/:token')
 router.route('/new-password/:token')
   .post(userController.newPassword);
 
-module.exports = router;
+module.exports = router; 

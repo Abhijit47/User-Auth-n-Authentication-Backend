@@ -29,8 +29,10 @@ exports.sendMailToUser = async (res, name, email, token) => {
       html: `
           <p>
           Hiii ${name},Please copy the link  
-            <a href="https://user-auth-n-authentication.vercel.app/resetpassword/${token}"target=_blank>click here</a>  
-              and reset your password
+            <a href="https://user-auth-n-authentication.vercel.app/resetpassword/${token}"target=_blank>
+            click here
+            </a>  
+            and reset your password
           </p>
       `
     };

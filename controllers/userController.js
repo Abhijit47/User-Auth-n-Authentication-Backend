@@ -23,7 +23,7 @@ exports.registerUser = async (req, res, next) => {
   }
 
   // 3. hash the user password
-  const hashedPassword = await bcrypt.hash(password, process.env.SALT_ROUNDS);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
     // 4. create a user
@@ -105,7 +105,8 @@ exports.forgotPassword = async (req, res, next) => {
 
     // 3. create a forgot token and store it temporary in db
     const { _id, firstname, email } = findUser;
-    const forgotToken = createToken({ _id, firstname, email }, process.env.ACCESS_TOKEN, "5m");
+    const forgotToken = createToken({ _id, firstname, email }, process.env.ACCESS_TOKEN, "15m");
+
     const updateUser = await User.updateOne(
       { email: req.body.email },
       {
@@ -125,32 +126,30 @@ exports.forgotPassword = async (req, res, next) => {
   }
 };
 
-// reset password
+// reset password 
+// it is a some thing like middleware not proper middleware
 exports.resetPassword = async (req, res, next) => {
 
   try {
     // 1. check user is exist or not
     const userToken = await User.findOne({ forgotToken: req.params.token });
 
-    // 2. if user exist then decode the token
-    if (userToken !== null) {
-      const tokenDecode = await decodeToken(userToken.forgotToken, process.env.ACCESS_TOKEN);
+    if (userToken === null) {
+      return errorResponse(res, "Link is already used to reset password!", 200);
+    }
+    // 2. if temporary token exist then decode the token
+    const tokenDecode = await decodeToken(userToken.forgotToken, process.env.ACCESS_TOKEN);
+    // Generates a timestamp for the current time
+    let currentTime = Math.round(new Date() / 1000);
 
-      // Generates a timestamp for the current time
-      let currentTime = Math.round(new Date() / 1000);
-
-      // 3. check the time is expire or not
-      if (currentTime <= tokenDecode.exp) {
-        // ** only for developement time
-        // console.log("not expired");
-        successResponse(res, "Token verified successfully.", 200);
-
-      } else {
-        errorResponse(res, "Link has been expired.", 498);
-      }
+    // 3. check the time is expire or not
+    if (currentTime <= tokenDecode.exp) {
+      // ** only for developement time
+      // console.log("not expired");
+      successResponse(res, "Token verified successfully.", 200);
 
     } else {
-      errorResponse(res, "Link is already used to reset password!", 204);
+      errorResponse(res, "Link has been expired.", 498);
     }
   } catch (err) {
     errorResponse(res, err.message, 400);
@@ -170,7 +169,7 @@ exports.newPassword = async (req, res, next) => {
     const tokenDecode = await decodeToken(token, process.env.ACCESS_TOKEN);
 
     // 4. hashed the new password again
-    const newHashPassword = await bcrypt.hash(password, process.env.SALT_ROUNDS);
+    const newHashPassword = await bcrypt.hash(password, 10);
 
     // 5. find this user with token decoded email
     const filter = { email: tokenDecode.email };

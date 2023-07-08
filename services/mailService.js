@@ -29,7 +29,7 @@ exports.sendMailToUser = async (res, name, email, token) => {
       html: `
           <p>
           Hiii ${name},Please copy the link  
-            <a href="http://localhost:3000/resetpassword/${token}"target=_blank>click here</a>  
+            <a href="https://user-auth-z08s.onrender.com/api/v1/reset-password/${token}"target=_blank>click here</a>  
               and reset your password
           </p>
       `
